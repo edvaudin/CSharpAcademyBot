@@ -136,6 +136,7 @@ namespace CSharpAcademyBot
 
         private async Task OnReactionRemoved(DiscordClient sender, MessageReactionRemoveEventArgs e)
         {
+            if (e.Emoji != DiscordEmoji.FromUnicode(Client, "\u2705")) { return; }
             var author = e.Message.Author;
             using (DAL dal = new DAL())
             {
@@ -160,6 +161,7 @@ namespace CSharpAcademyBot
 
         private async Task OnReactionAdded(DiscordClient sender, MessageReactionAddEventArgs e)
         {
+            if (e.Emoji != DiscordEmoji.FromUnicode(Client, "\u2705")) { return; }
             var author = e.Message.Author;
             using (DAL dal = new DAL())
             {
@@ -181,6 +183,5 @@ namespace CSharpAcademyBot
             await e.Channel.SendMessageAsync($"Someone approved of {author.Mention}'s answer.");
             return;
         }
-
     }
 }
