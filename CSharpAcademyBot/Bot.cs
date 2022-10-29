@@ -16,7 +16,6 @@ namespace CSharpAcademyBot
 {
     public class Bot
     {
-        const long TEST_SERVER_ID = 955584592163799040;
         public DiscordClient Client { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public InteractivityExtension Interactivity { get; private set; }
@@ -120,7 +119,7 @@ namespace CSharpAcademyBot
                     }
                     if (highestAchievedRole != null)
                     {
-                        var guild = await Client.GetGuildAsync(TEST_SERVER_ID);
+                        var guild = await Client.GetGuildAsync(Config.TestServer);
                         var discordRole = guild.GetRole((ulong)highestAchievedRole.discordId);
                         var member = await guild.GetMemberAsync((ulong)userId);
                         await AssignRole(member, discordRole);

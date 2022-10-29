@@ -13,5 +13,7 @@ namespace CSharpAcademyBot
         public string Prefix { get; private set; }
         [JsonProperty("database")]
         public string Database { get; private set; }
+        [JsonProperty("test_server")]
+        public ulong TestServer { get; private set; }
     }
 }
