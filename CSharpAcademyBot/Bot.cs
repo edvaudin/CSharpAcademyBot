@@ -1,5 +1,6 @@
 ﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ namespace CSharpAcademyBot
 {
     public class Bot
     {
+        const long TEST_SERVER_ID = 955584592163799040;
         public DiscordClient Client { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public InteractivityExtension Interactivity { get; private set; }
@@ -39,19 +41,6 @@ namespace CSharpAcademyBot
             await Task.Delay(-1);
         }
 
-        private async Task OnReactionRemoved(DiscordClient sender, MessageReactionRemoveEventArgs e)
-        {
-            var author = e.Message.Author;
-            await e.Channel.SendMessageAsync($"Someone revoked their approval of {author.Mention}'s answer.");
-            return;
-        }
-
-        private async Task OnReactionAdded(DiscordClient sender, MessageReactionAddEventArgs e)
-        {
-            var author = e.Message.Author;
-            await e.Channel.SendMessageAsync($"Someone approved of {author.Mention}'s answer.");
-            return;
-        }
 
         private static DiscordConfiguration GenerateConfig()
         {
@@ -61,8 +50,10 @@ namespace CSharpAcademyBot
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
                 MinimumLogLevel = LogLevel.Debug,
-                Intents = DiscordIntents.AllUnprivileged
-                | DiscordIntents.GuildMessages
+                Intents = DiscordIntents.GuildMessages
+                        | DiscordIntents.GuildMembers
+                        | DiscordIntents.GuildMessageReactions
+                        | DiscordIntents.Guilds
             };
         }
 
@@ -97,5 +88,99 @@ namespace CSharpAcademyBot
 
             return JsonConvert.DeserializeObject<ConfigJson>(json);
         }
+
+        private async Task AssignRole(DiscordMember member, DiscordRole discordRole)
+        {
+            try
+            {
+                await member.GrantRoleAsync(discordRole);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        private async Task CheckForUserRankUp(long userId)
+        {
+            using (DAL dal = new DAL())
+            {
+                try
+                {
+                    List<ReputationRole> roles = dal.GetRoles();
+                    List<ReputationRole> sortedRoles = roles.OrderBy(r => r.requirement).ToList();
+                    int userRep = dal.GetUserReputation(userId);
+                    ReputationRole highestAchievedRole = null;
+                    foreach (ReputationRole role in sortedRoles)
+                    {
+                        if (userRep >= role.requirement)
+                        {
+                            highestAchievedRole = role;
+                        }
+                    }
+                    if (highestAchievedRole != null)
+                    {
+                        var guild = await Client.GetGuildAsync(TEST_SERVER_ID);
+                        var discordRole = guild.GetRole((ulong)highestAchievedRole.discordId);
+                        var member = await guild.GetMemberAsync((ulong)userId);
+                        await AssignRole(member, discordRole);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+
+            }
+        }
+
+        private async Task OnReactionRemoved(DiscordClient sender, MessageReactionRemoveEventArgs e)
+        {
+            var author = e.Message.Author;
+            using (DAL dal = new DAL())
+            {
+                try
+                {
+                    if (!dal.UserExists((long)author.Id))
+                    {
+                        dal.AddUser(author.Username, (long)author.Id);
+                        dal.AddUserRepRecord((long)author.Id);
+                    }
+                    dal.AddRepForUser((long)author.Id, -1);
+                    await CheckForUserRankUp((long)author.Id);
+                }
+                catch (Exception ex)
+                {
+                    await e.Channel.SendMessageAsync(ex.Message);
+                }
+            }
+            await e.Channel.SendMessageAsync($"Someone unapproved of {author.Mention}'s answer.");
+            return;
+        }
+
+        private async Task OnReactionAdded(DiscordClient sender, MessageReactionAddEventArgs e)
+        {
+            var author = e.Message.Author;
+            using (DAL dal = new DAL())
+            {
+                try
+                {
+                    if (!dal.UserExists((long)author.Id))
+                    {
+                        dal.AddUser(author.Username, (long)author.Id);
+                        dal.AddUserRepRecord((long)author.Id);
+                    }
+                    dal.AddRepForUser((long)author.Id, 1);
+                    await CheckForUserRankUp((long)author.Id);
+                }
+                catch (Exception ex)
+                {
+                    await e.Channel.SendMessageAsync(ex.Message);
+                }
+            }
+            await e.Channel.SendMessageAsync($"Someone approved of {author.Mention}'s answer.");
+            return;
+        }
+
     }
 }
