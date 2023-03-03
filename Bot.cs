@@ -1,6 +1,11 @@
-﻿using DSharpPlus;
+﻿using CSharpAcademyBot.Contexts;
+using CSharpAcademyBot.Factories;
+using CSharpAcademyBot.Repositories;
+using CSharpAcademyBot.Services;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -72,6 +77,9 @@ internal class Bot
     private static ServiceProvider GenerateServices()
     {
         var serviceCollection = new ServiceCollection();
+        serviceCollection.AddDbContextFactory<AcademyContext>();
+        serviceCollection.AddScoped<IAcademyService, AcademyService>();
+        serviceCollection.AddScoped<IAcademyRepository, AcademyRepository>();
         var services = serviceCollection.BuildServiceProvider();
         return services;
     }
