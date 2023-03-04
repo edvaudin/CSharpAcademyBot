@@ -11,7 +11,7 @@ namespace CSharpAcademyBot.Factories
         {
             IConfigurationRoot configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
+                .AddUserSecrets<AcademyContextFactory>()
                 .Build();
             var optionsBuilder = new DbContextOptionsBuilder<AcademyContext>();
             optionsBuilder.UseMySql(configuration.GetConnectionString("MySqlConnection"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlConnection")));

@@ -6,6 +6,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -15,14 +16,12 @@ namespace CSharpAcademyBot;
 
 internal class Bot
 {
-    public static ConfigJson Config { get; private set; }
     public DiscordClient? Client { get; private set; }
     public CommandsNextExtension? Commands { get; private set; }
 
     public async Task RunAsync()
     {
-        Config = await GetConfigJson();
-        DiscordConfiguration config = GenerateConfig();
+        DiscordConfiguration config = GenerateDiscordConfig();
 
         Client = new DiscordClient(config);
         Client.Ready += OnClientReady;
@@ -45,11 +44,11 @@ internal class Bot
         await Task.Delay(-1);
     }
 
-    private static DiscordConfiguration GenerateConfig()
+    private static DiscordConfiguration GenerateDiscordConfig()
     {
         return new DiscordConfiguration()
         {
-            Token = Config.Token,
+            Token = GetConfiguration()["DiscordConfiguration:Token"],
             TokenType = TokenType.Bot,
             AutoReconnect = true,
             MinimumLogLevel = LogLevel.Debug,
@@ -58,15 +57,13 @@ internal class Bot
         };
     }
 
-    private static async Task<ConfigJson> GetConfigJson()
+    private static IConfigurationRoot GetConfiguration()
     {
-        var json = string.Empty;
-
-        using (var fs = File.OpenRead("config.json"))
-        using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
-            json = await sr.ReadToEndAsync().ConfigureAwait(false);
-
-        return JsonConvert.DeserializeObject<ConfigJson>(json);
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddUserSecrets<Bot>()
+                .Build();
+        return configuration;
     }
 
     private Task OnClientReady(DiscordClient client, ReadyEventArgs e)
@@ -88,7 +85,7 @@ internal class Bot
     {
         return new CommandsNextConfiguration
         {
-            StringPrefixes = new string[] { Config.Prefix },
+            StringPrefixes = new string[] { GetConfiguration()["DiscordConfiguration:Prefix"] },
             EnableDms = false,
             EnableMentionPrefix = true,
             Services = services
