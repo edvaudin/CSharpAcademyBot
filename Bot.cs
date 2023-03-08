@@ -19,6 +19,7 @@ internal class Bot
 {
     public DiscordClient? Client { get; private set; }
     public CommandsNextExtension? Commands { get; private set; }
+    private ReputationManager repManager;
 
     public async Task RunAsync()
     {
@@ -28,6 +29,7 @@ internal class Bot
         Client.Ready += OnClientReady;
 
         ServiceProvider services = GenerateServices();
+        repManager = services.GetRequiredService<ReputationManager>();
         CommandsNextConfiguration commandsConfig = GenerateCommandsConfig(services);
 
         RegisterCommands(commandsConfig);
@@ -53,10 +55,12 @@ internal class Bot
         if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44D"))
         {
             await e.Channel.SendMessageAsync($"{e.User.Username} just liked {e.Message.Author.Username}'s message.");
+            await repManager.UpdateUserReputation(e.Channel, e.User, 1);
         }
         else if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44E"))
         {
             await e.Channel.SendMessageAsync($"{e.User.Username} just disliked {e.Message.Author.Username}'s message.");
+            await repManager.UpdateUserReputation(e.Channel, e.User, -1);
         }
     }
 
@@ -65,10 +69,12 @@ internal class Bot
         if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44D"))
         {
             await e.Channel.SendMessageAsync($"{e.User.Username} just removed their like from {e.Message.Author.Username}'s message.");
+            await repManager.UpdateUserReputation(e.Channel, e.User, -1);
         }
         else if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44E"))
         {
             await e.Channel.SendMessageAsync($"{e.User.Username} just removed their dislike from {e.Message.Author.Username}'s message.");
+            await repManager.UpdateUserReputation(e.Channel, e.User, 1);
         }
     }
 
@@ -101,8 +107,13 @@ internal class Bot
 
     private static ServiceProvider GenerateServices()
     {
+        var configuration = GetConfiguration();
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddDbContextFactory<AcademyContext>();
+        serviceCollection.AddDbContext<AcademyContext>(optionsBuilder =>
+        {
+            optionsBuilder.UseMySql(configuration["ConnectionStrings:MySqlConnection"], ServerVersion.AutoDetect(configuration["ConnectionStrings:MySqlConnection"]));
+        });
+        serviceCollection.AddScoped<ReputationManager>();
         serviceCollection.AddScoped<IAcademyService, AcademyService>();
         serviceCollection.AddScoped<IAcademyRepository, AcademyRepository>();
         var services = serviceCollection.BuildServiceProvider();

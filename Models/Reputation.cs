@@ -2,7 +2,7 @@
 
 namespace CSharpAcademyBot.Models;
 
-public class Reputation
+public class UserReputation
 {
     [Key]
     public int UserId { get; set; } 

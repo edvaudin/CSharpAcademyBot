@@ -5,8 +5,7 @@ namespace CSharpAcademyBot.Contexts;
 
 public class AcademyContext : DbContext
 {
-    DbSet<User> Users { get; set; }
-    DbSet<Reputation> UserReputations { get; set; }
+    public DbSet<User> Users { get; set; }
 
     public AcademyContext(DbContextOptions<AcademyContext> options) : base(options) { }
 
@@ -17,6 +16,6 @@ public class AcademyContext : DbContext
         modelBuilder.Entity<User>()
             .HasOne(u => u.Reputation)
             .WithOne(u => u.User)
-            .HasForeignKey<Reputation>(u => u.UserId);
+            .HasForeignKey<UserReputation>(u => u.UserId);
     }
 }

@@ -13,5 +13,5 @@ public class User
     [Required]
     [MaxLength(100)]
     public string Name { get; set; }
-    public Reputation Reputation { get; set; }
+    public UserReputation Reputation { get; set; }
 }

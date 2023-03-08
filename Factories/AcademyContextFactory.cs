@@ -14,7 +14,7 @@ namespace CSharpAcademyBot.Factories
                 .AddUserSecrets<AcademyContextFactory>()
                 .Build();
             var optionsBuilder = new DbContextOptionsBuilder<AcademyContext>();
-            optionsBuilder.UseMySql(configuration.GetConnectionString("MySqlConnection"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlConnection")));
+            optionsBuilder.UseMySql(configuration["ConnectionStrings:MySqlConnection"], ServerVersion.AutoDetect(configuration["ConnectionStrings:MySqlConnection"]));
 
             return new AcademyContext(optionsBuilder.Options);
         }
