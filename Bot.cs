@@ -4,6 +4,7 @@ using CSharpAcademyBot.Repositories;
 using CSharpAcademyBot.Services;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -40,8 +41,35 @@ internal class Bot
             }
         };
 
+        Client.MessageReactionAdded += OnMessageReactionAdded;
+        Client.MessageReactionRemoved += OnMessageReactionRemoved;
+
         // Keep the bot online when switched on.
         await Task.Delay(-1);
+    }
+
+    private async Task OnMessageReactionAdded(DiscordClient sender, MessageReactionAddEventArgs e)
+    {
+        if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44D"))
+        {
+            await e.Channel.SendMessageAsync($"{e.User.Username} just liked {e.Message.Author.Username}'s message.");
+        }
+        else if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44E"))
+        {
+            await e.Channel.SendMessageAsync($"{e.User.Username} just disliked {e.Message.Author.Username}'s message.");
+        }
+    }
+
+    private async Task OnMessageReactionRemoved(DiscordClient sender, MessageReactionRemoveEventArgs e)
+    {
+        if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44D"))
+        {
+            await e.Channel.SendMessageAsync($"{e.User.Username} just removed their like from {e.Message.Author.Username}'s message.");
+        }
+        else if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44E"))
+        {
+            await e.Channel.SendMessageAsync($"{e.User.Username} just removed their dislike from {e.Message.Author.Username}'s message.");
+        }
     }
 
     private static DiscordConfiguration GenerateDiscordConfig()
