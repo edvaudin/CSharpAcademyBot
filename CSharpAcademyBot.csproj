@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="DSharpPlus" Version="4.4.0-nightly-01249" />
     <PackageReference Include="DSharpPlus.CommandsNext" Version="4.4.0-nightly-01249" />
+    <PackageReference Include="DSharpPlus.Rest" Version="4.4.0-nightly-01249" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0-preview.1.23111.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0-preview.1.23111.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0-preview.1.23111.4">
