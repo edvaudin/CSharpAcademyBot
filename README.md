@@ -31,3 +31,38 @@ Currently there is no production solution for hosting or any central database, y
 A project page is currently in development where issues can be created and assigned so that people can try adding features. Once you have a feature, fix or improvement you would like to add, please create a pull request. 
 
 For brainstorming ideas and practices, this can either be done on the C# Academy Discord server, or by creating an issue on GitHub.
+
+# How to setup a MySql server using Docker for local development
+
+Firstly, it is expected that you have Docker installed on your computer and have a Docker hub account. We will be using the official MySql image, you can read more about it [here](https://hub.docker.com/_/mysql).
+
+Secondly, your MySqlConnection string should be filled in. Here is an example of the one that I use: `server=127.0.0.1;uid=root;pwd=mysecurepassword;database=csharpacademybot`
+
+In Visual Studio open up the Developer PowerShell and copy in the following docker run command:
+
+```
+docker run --name mysql-csharpacademybot -e MYSQL_ROOT_PASSWORD=mysecurepassword -p 3306:3306 -d mysql:8
+```
+
+The docker run command is going to create a container for us containing the MySql server, to which we will be connecting to using the MySqlConnection string which is located in the 'secrets.json' file.
+
+Options explained (for more options please see documentation [here](https://docs.docker.com/engine/reference/commandline/run/)):
+1. --name is where we enter in the name we want for the container.
+2. -e is where we enter in the environment variables such as the mysql root password. Make sure that the MYSQL_ROOT_PASSWORD is the same one as in the MySqlConnection string.
+3. -p is where we enter in the port mappings. So the docker host port TCP 3306 (left side) is mapped to docker container port TCP 3306 (right side).
+4. -d is for running the container in the background.
+5. mysql:8 this is the image we will be using, and 8 is the version of the image.
+
+After executing this command, you should see a new container called mysql-csharpacademybot, and it should have the status 'Running'. To confirm that the MySql server is indeed installed in the container and is running sucessfully, do the following:
+
+1. Click on the mysql-csharpacademybot container we just created, and open the 'Terminal' tab.
+2. Type in the following `mysql -u root -p` press enter, and then enter in the password we set for MYSQL_ROOT_PASSWORD and enter again.
+3. Now we should see a MySQL monitor screen. If you type in the following SQL `SHOW DATABASES;`, we should see a table with 4 existing databases.
+
+Now let's perform the database Migrations by running the following command in the Developer PowerShell within Visual Studio:
+
+```
+dotnet ef database update
+```
+
+We should see that the migrations were applied and the Done. message. To confirm this, we can use the terminal of the container to query for the databases again, and you should see a new database with the name that you picked, which is `csharpacademybot` in my case from the connection string.
