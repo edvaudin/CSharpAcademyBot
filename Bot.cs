@@ -18,6 +18,7 @@ namespace CSharpAcademyBot;
 internal class Bot
 {
     public DiscordClient? Client { get; private set; }
+    public DiscordRestClient? RestClient { get; private set; }
     public CommandsNextExtension? Commands { get; private set; }
     private ReputationManager repManager;
 
@@ -26,6 +27,7 @@ internal class Bot
         DiscordConfiguration config = GenerateDiscordConfig();
 
         Client = new DiscordClient(config);
+        RestClient = new DiscordRestClient(config);
         Client.Ready += OnClientReady;
 
         ServiceProvider services = GenerateServices();
@@ -52,29 +54,65 @@ internal class Bot
 
     private async Task OnMessageReactionAdded(DiscordClient sender, MessageReactionAddEventArgs e)
     {
-        if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44D"))
+        if (e.Message.Author is null)
         {
-            await e.Channel.SendMessageAsync($"{e.User.Username} just liked {e.Message.Author.Username}'s message.");
-            await repManager.UpdateUserReputation(e.Channel, e.User, 1);
+            DiscordMessage message = await RestClient.GetMessageAsync(e.Message.ChannelId, e.Message.Id);
+
+            if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44D"))
+            {
+                await e.Channel.SendMessageAsync($"{e.User.Username} just liked {message.Author.Username}'s message.");
+                await repManager.UpdateUserReputation(e.Channel, message.Author, 1);
+            }
+            else if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44E"))
+            {
+                await e.Channel.SendMessageAsync($"{e.User.Username} just disliked {message.Author.Username}'s message.");
+                await repManager.UpdateUserReputation(e.Channel, message.Author, -1);
+            }
         }
-        else if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44E"))
+        else
         {
-            await e.Channel.SendMessageAsync($"{e.User.Username} just disliked {e.Message.Author.Username}'s message.");
-            await repManager.UpdateUserReputation(e.Channel, e.User, -1);
+            if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44D"))
+            {
+                await e.Channel.SendMessageAsync($"{e.User.Username} just liked {e.Message.Author.Username}'s message.");
+                await repManager.UpdateUserReputation(e.Channel, e.Message.Author, 1);
+            }
+            else if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44E"))
+            {
+                await e.Channel.SendMessageAsync($"{e.User.Username} just disliked {e.Message.Author.Username}'s message.");
+                await repManager.UpdateUserReputation(e.Channel, e.Message.Author, -1);
+            }
         }
     }
 
     private async Task OnMessageReactionRemoved(DiscordClient sender, MessageReactionRemoveEventArgs e)
     {
-        if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44D"))
+        if (e.Message.Author is null)
         {
-            await e.Channel.SendMessageAsync($"{e.User.Username} just removed their like from {e.Message.Author.Username}'s message.");
-            await repManager.UpdateUserReputation(e.Channel, e.User, -1);
+            DiscordMessage message = await RestClient.GetMessageAsync(e.Message.ChannelId, e.Message.Id);
+
+            if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44D"))
+            {
+                await e.Channel.SendMessageAsync($"{e.User.Username} just removed their like from {message.Author.Username}'s message.");
+                await repManager.UpdateUserReputation(e.Channel, message.Author, -1);
+            }
+            else if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44E"))
+            {
+                await e.Channel.SendMessageAsync($"{e.User.Username} just removed their dislike from {message.Author.Username}'s message.");
+                await repManager.UpdateUserReputation(e.Channel, message.Author, 1);
+            }
         }
-        else if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44E"))
+        else
         {
-            await e.Channel.SendMessageAsync($"{e.User.Username} just removed their dislike from {e.Message.Author.Username}'s message.");
-            await repManager.UpdateUserReputation(e.Channel, e.User, 1);
+            if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44D"))
+            {
+                await e.Channel.SendMessageAsync($"{e.User.Username} just removed their like from {e.Message.Author.Username}'s message.");
+                await repManager.UpdateUserReputation(e.Channel, e.Message.Author, -1);
+            }
+            else if (e.Emoji == DiscordEmoji.FromUnicode("\U0001F44E"))
+            {
+                await e.Channel.SendMessageAsync($"{e.User.Username} just removed their dislike from {e.Message.Author.Username}'s message.");
+                await repManager.UpdateUserReputation(e.Channel, e.Message.Author, 1);
+            }
         }
     }
 
