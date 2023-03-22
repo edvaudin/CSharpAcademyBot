@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Text;
 
@@ -147,10 +148,16 @@ internal class Bot
     {
         var configuration = GetConfiguration();
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddDbContext<AcademyContext>(optionsBuilder =>
+        var provider = configuration["provider"];
+        _ = provider switch
         {
-            optionsBuilder.UseMySql(configuration["ConnectionStrings:MySqlConnection"], ServerVersion.AutoDetect(configuration["ConnectionStrings:MySqlConnection"]));
-        });
+            "mysql" => serviceCollection.AddDbContext<IAcademyContext, MySqlAcademyContext>(),
+
+            "sqlserver" => serviceCollection.AddDbContext<IAcademyContext, SqlServerAcademyContext>(),
+
+            _ => throw new Exception($"Unsupported provider: {provider}")
+        };
+
         serviceCollection.AddScoped<ReputationManager>();
         serviceCollection.AddScoped<IAcademyService, AcademyService>();
         serviceCollection.AddScoped<IAcademyRepository, AcademyRepository>();
