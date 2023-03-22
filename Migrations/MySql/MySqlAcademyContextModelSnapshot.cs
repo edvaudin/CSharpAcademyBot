@@ -6,10 +6,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace CSharpAcademyBot.Migrations
+namespace CSharpAcademyBot.Migrations.MySql
 {
-    [DbContext(typeof(AcademyContext))]
-    partial class AcademyContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(MySqlAcademyContext))]
+    partial class MySqlAcademyContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
