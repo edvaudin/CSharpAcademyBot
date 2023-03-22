@@ -6,8 +6,8 @@ namespace CSharpAcademyBot.Repositories;
 
 public class AcademyRepository : IAcademyRepository
 {
-    private readonly AcademyContext context;
-    public AcademyRepository(AcademyContext context) 
+    private readonly IAcademyContext context;
+    public AcademyRepository(IAcademyContext context)
     {
         this.context = context;
     }

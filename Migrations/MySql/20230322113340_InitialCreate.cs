@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace CSharpAcademyBot.Migrations
+namespace CSharpAcademyBot.Migrations.MySql
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -21,7 +21,7 @@ namespace CSharpAcademyBot.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     DiscordId = table.Column<long>(type: "bigint", nullable: false),
-                    Name = table.Column<string>(type: "longtext", nullable: false)
+                    Name = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
@@ -31,7 +31,7 @@ namespace CSharpAcademyBot.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "UserReputations",
+                name: "UserReputation",
                 columns: table => new
                 {
                     UserId = table.Column<int>(type: "int", nullable: false),
@@ -39,9 +39,9 @@ namespace CSharpAcademyBot.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserReputations", x => x.UserId);
+                    table.PrimaryKey("PK_UserReputation", x => x.UserId);
                     table.ForeignKey(
-                        name: "FK_UserReputations_Users_UserId",
+                        name: "FK_UserReputation_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -54,7 +54,7 @@ namespace CSharpAcademyBot.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "UserReputations");
+                name: "UserReputation");
 
             migrationBuilder.DropTable(
                 name: "Users");
