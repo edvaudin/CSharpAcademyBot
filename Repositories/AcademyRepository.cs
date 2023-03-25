@@ -24,6 +24,16 @@ public class AcademyRepository : IAcademyRepository
         return context.Users.Include(u => u.Reputation).FirstOrDefault(x => x.DiscordId == discordId);
     }
 
+    public List<GetUserDTO> GetUsers()
+    {
+        return context.Users.Include(u => u.Reputation).Select(u => new GetUserDTO
+        {
+            DiscordId = u.DiscordId,
+            Name = u.Name,
+            Amount = u.Reputation.Amount
+        }).ToList();
+    }
+
     public void UpdateUserReputation(User user, int delta)
     {
         user.Reputation.Amount += delta;
