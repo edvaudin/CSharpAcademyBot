@@ -1,5 +1,6 @@
 ﻿using CSharpAcademyBot.Contexts;
 using CSharpAcademyBot.Factories;
+using CSharpAcademyBot.Models;
 using CSharpAcademyBot.Repositories;
 using CSharpAcademyBot.Services;
 using DSharpPlus;
@@ -43,6 +44,18 @@ internal class Bot
             if (e.Message.Content.ToLower() == "ping")
             {
                 await e.Message.RespondAsync("pong");
+            }
+            else if (e.Message.Content.ToLower() == "?users")
+            {
+                var repo = services.GetRequiredService<IAcademyRepository>();
+
+                List<GetUserDTO> users = repo.GetUsers();
+                string message = "";
+                foreach (var user in users)
+                {
+                    message += $"Discord Id: {user.DiscordId} Name: {user.Name} Amount: {user.Amount}\n";
+                }
+                await e.Message.RespondAsync(message);
             }
         };
 
