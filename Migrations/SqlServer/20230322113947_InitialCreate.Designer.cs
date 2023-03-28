@@ -2,15 +2,16 @@
 using CSharpAcademyBot.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace CSharpAcademyBot.Migrations
+namespace CSharpAcademyBot.Migrations.SqlServer
 {
-    [DbContext(typeof(AcademyContext))]
-    [Migration("20230303215646_InitialCreate")]
+    [DbContext(typeof(SqlServerAcademyContext))]
+    [Migration("20230322113947_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -19,9 +20,32 @@ namespace CSharpAcademyBot.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.0-preview.1.23111.4")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            modelBuilder.Entity("CSharpAcademyBot.Models.Reputation", b =>
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("CSharpAcademyBot.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<long>("DiscordId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("CSharpAcademyBot.Models.UserReputation", b =>
                 {
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -31,32 +55,14 @@ namespace CSharpAcademyBot.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("UserReputations");
+                    b.ToTable("UserReputation");
                 });
 
-            modelBuilder.Entity("CSharpAcademyBot.Models.User", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<long>("DiscordId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("CSharpAcademyBot.Models.Reputation", b =>
+            modelBuilder.Entity("CSharpAcademyBot.Models.UserReputation", b =>
                 {
                     b.HasOne("CSharpAcademyBot.Models.User", "User")
                         .WithOne("Reputation")
-                        .HasForeignKey("CSharpAcademyBot.Models.Reputation", "UserId")
+                        .HasForeignKey("CSharpAcademyBot.Models.UserReputation", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

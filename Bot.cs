@@ -1,5 +1,6 @@
 ﻿using CSharpAcademyBot.Contexts;
 using CSharpAcademyBot.Factories;
+using CSharpAcademyBot.Models;
 using CSharpAcademyBot.Repositories;
 using CSharpAcademyBot.Services;
 using DSharpPlus;
@@ -10,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Text;
 
@@ -42,6 +44,18 @@ internal class Bot
             if (e.Message.Content.ToLower() == "ping")
             {
                 await e.Message.RespondAsync("pong");
+            }
+            else if (e.Message.Content.ToLower() == "?users")
+            {
+                var repo = services.GetRequiredService<IAcademyRepository>();
+
+                List<GetUserDTO> users = repo.GetUsers();
+                string message = "";
+                foreach (var user in users)
+                {
+                    message += $"Discord Id: {user.DiscordId} Name: {user.Name} Amount: {user.Amount}\n";
+                }
+                await e.Message.RespondAsync(message);
             }
         };
 
@@ -147,10 +161,16 @@ internal class Bot
     {
         var configuration = GetConfiguration();
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddDbContext<AcademyContext>(optionsBuilder =>
+        var provider = configuration["provider"];
+        _ = provider switch
         {
-            optionsBuilder.UseMySql(configuration["ConnectionStrings:MySqlConnection"], ServerVersion.AutoDetect(configuration["ConnectionStrings:MySqlConnection"]));
-        });
+            "mysql" => serviceCollection.AddDbContext<IAcademyContext, MySqlAcademyContext>(),
+
+            "sqlserver" => serviceCollection.AddDbContext<IAcademyContext, SqlServerAcademyContext>(),
+
+            _ => throw new Exception($"Unsupported provider: {provider}")
+        };
+
         serviceCollection.AddScoped<ReputationManager>();
         serviceCollection.AddScoped<IAcademyService, AcademyService>();
         serviceCollection.AddScoped<IAcademyRepository, AcademyRepository>();

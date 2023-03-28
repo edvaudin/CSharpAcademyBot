@@ -2,16 +2,27 @@
 
 #nullable disable
 
-namespace CSharpAcademyBot.Migrations
+namespace CSharpAcademyBot.Migrations.SqlServer
 {
     /// <inheritdoc />
-    public partial class ModelNameChange : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "UserReputations");
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DiscordId = table.Column<long>(type: "bigint", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "UserReputation",
@@ -29,8 +40,7 @@ namespace CSharpAcademyBot.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
         }
 
         /// <inheritdoc />
@@ -39,24 +49,8 @@ namespace CSharpAcademyBot.Migrations
             migrationBuilder.DropTable(
                 name: "UserReputation");
 
-            migrationBuilder.CreateTable(
-                name: "UserReputations",
-                columns: table => new
-                {
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    Amount = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserReputations", x => x.UserId);
-                    table.ForeignKey(
-                        name: "FK_UserReputations_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }

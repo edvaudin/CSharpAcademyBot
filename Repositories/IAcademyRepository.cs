@@ -9,4 +9,5 @@ public interface IAcademyRepository
     User AddNewUser(User user);
     User? GetUserByDiscordId(long discordId);
     void UpdateUserReputation(User user, int delta);
+    List<GetUserDTO> GetUsers();
 }

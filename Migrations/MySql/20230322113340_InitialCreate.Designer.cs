@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace CSharpAcademyBot.Migrations
+namespace CSharpAcademyBot.Migrations.MySql
 {
-    [DbContext(typeof(AcademyContext))]
-    [Migration("20230308143713_ModelNameChange")]
-    partial class ModelNameChange
+    [DbContext(typeof(MySqlAcademyContext))]
+    [Migration("20230322113340_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

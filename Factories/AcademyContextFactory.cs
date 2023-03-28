@@ -2,21 +2,34 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace CSharpAcademyBot.Factories
 {
-    public class AcademyContextFactory : IDesignTimeDbContextFactory<AcademyContext>
+    public class AcademyContextFactory : IDesignTimeDbContextFactory<DbContext>
     {
-        public AcademyContext CreateDbContext(string[] args)
+        public DbContext CreateDbContext(string[] args)
         {
             IConfigurationRoot configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddUserSecrets<AcademyContextFactory>()
                 .Build();
-            var optionsBuilder = new DbContextOptionsBuilder<AcademyContext>();
-            optionsBuilder.UseMySql(configuration["ConnectionStrings:MySqlConnection"], ServerVersion.AutoDetect(configuration["ConnectionStrings:MySqlConnection"]));
+            var provider = configuration["provider"];
 
-            return new AcademyContext(optionsBuilder.Options);
+            if (provider == "mysql")
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<MySqlAcademyContext>();
+                return new MySqlAcademyContext(optionsBuilder.Options);
+            }
+            else if (provider == "sqlserver")
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<SqlServerAcademyContext>();
+                return new SqlServerAcademyContext(optionsBuilder.Options);
+            }
+            else
+            {
+                throw new Exception($"Unsupported provider: {provider}");
+            }
         }
     }
 }
